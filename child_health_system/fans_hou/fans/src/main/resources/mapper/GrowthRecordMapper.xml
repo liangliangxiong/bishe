@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.GrowthRecordMapper">
+    <!-- 分页查询生长记录 -->
+    <select id="getGrowthRecordList" resultType="map">
+        SELECT 
+            gr.record_id as recordId,
+            gr.child_id as childId,
+            c.name as childName,
+            gr.height,
+            gr.weight,
+            gr.bmi,
+            gr.measure_date as measureDate,
+            gr.recorded_by as recordedBy,
+            gr.created_at as createdAt,
+            gr.updated_at as updatedAt
+        FROM growth_records gr
+        LEFT JOIN children c ON gr.child_id = c.child_id
+        <where>
+            <if test="query != null and query != ''">
+                AND (gr.notes LIKE CONCAT('%', #{query}, '%'))
+            </if>
+        </where>
+        ORDER BY gr.created_at DESC
+        LIMIT #{start}, #{pageSize}
+    </select>
+
+    <!-- 查询生长记录总数 -->
+    <select id="getGrowthRecordCount" resultType="java.lang.Integer">
+        SELECT COUNT(*) 
+        FROM growth_records gr
+        <where>
+            <if test="query != null and query != ''">
+                AND (gr.notes LIKE CONCAT('%', #{query}, '%'))
+            </if>
+        </where>
+    </select>
+
+    <!-- 结果映射 -->
+    <resultMap id="growthRecordResultMap" type="org.example.pojo.GrowthRecord">
+        <id column="record_id" property="recordId"/>
+        <result column="child_id" property="childId"/>
+        <result column="height" property="height"/>
+        <result column="weight" property="weight"/>
+        <result column="bmi" property="bmi"/>
+        <result column="measure_date" property="measureDate"/>
+        <result column="recorded_by" property="recordedBy"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <!-- 关联的儿童信息 -->
+        <association property="child" javaType="org.example.pojo.Child">
+            <id column="child_id" property="childId"/>
+            <result column="child_name" property="name"/>
+        </association>
+        <!-- 关联的记录人信息 -->
+        <association property="recorder" javaType="org.example.pojo.User">
+            <id column="recorded_by" property="userId"/>
+            <result column="recorder_username" property="username"/>
+            <result column="recorder_name" property="realName"/>
+        </association>
+    </resultMap>
+</mapper> 

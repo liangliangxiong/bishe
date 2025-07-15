@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.ChildMapper">
+    <!-- 分页查询儿童列表 -->
+    <select id="selectChildList" resultMap="childResultMap">
+        SELECT c.*, CAST(u.user_id AS CHAR) as parent_id, u.username as parent_username, u.real_name as parent_name 
+        FROM children c
+        LEFT JOIN user u ON c.parent_id = u.user_id
+        <where>
+            <if test="query != null and query != ''">
+                c.name LIKE CONCAT('%', #{query}, '%')
+            </if>
+        </where>
+        ORDER BY c.created_at DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <!-- 查询儿童总数 -->
+    <select id="selectChildCount" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM children
+        <where>
+            <if test="query != null and query != ''">
+                name LIKE CONCAT('%', #{query}, '%')
+            </if>
+        </where>
+    </select>
+
+    <!-- 结果映射 -->
+    <resultMap id="childResultMap" type="org.example.pojo.Child">
+        <id column="child_id" property="childId"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="name" property="name"/>
+        <result column="gender" property="gender" typeHandler="org.example.handler.GenderEnumTypeHandler"/>
+        <result column="birth_date" property="birthDate"/>
+        <result column="blood_type" property="bloodType" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="parent_username" property="parentUsername"/>
+        <result column="parent_name" property="parentName"/>
+    </resultMap>
+</mapper> 
